@@ -77,7 +77,7 @@ class EncryptingKeypair(Keypair):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def decrypt(self, message_kit: MessageKit, verifying_key: UmbralPublicKey = None) -> bytes:
+    def decrypt(self, message_kit: MessageKit) -> bytes:
         """
         Decrypt data encrypted with Umbral.
 

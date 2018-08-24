@@ -217,7 +217,7 @@ def test_bob_remembers_that_he_has_cfrags_for_a_particular_capsule(enacted_feder
     capsule_side_channel[0].capsule.attach_cfrag(new_cfrag)
 
 
-def test_bob_gathers_and_combines(enacted_federated_policy, bob, alice, capsule_side_channel):
+def test_bob_gathers_and_combines(enacted_federated_policy, bob, capsule_side_channel):
     # The side channel is represented as a single MessageKit, which is all that Bob really needs.
     the_message_kit, the_data_source = capsule_side_channel
 
@@ -229,7 +229,7 @@ def test_bob_gathers_and_combines(enacted_federated_policy, bob, alice, capsule_
 
     # Bob can't decrypt yet with just two CFrags.  He needs to gather at least m.
     with pytest.raises(pre.GenericUmbralError):
-        bob.decrypt(the_message_kit, verifying_key=alice.stamp.as_umbral_pubkey())
+        bob.decrypt(the_message_kit)
 
     number_left_to_collect = enacted_federated_policy.treasure_map.m - len(bob._saved_work_orders)
 
@@ -243,7 +243,5 @@ def test_bob_gathers_and_combines(enacted_federated_policy, bob, alice, capsule_
 
     # Now.
     # At long last.
-    cleartext = bob.verify_from(the_data_source, the_message_kit,
-                                decrypt=True,
-                                delegator_signing_key=alice.stamp.as_umbral_pubkey())
+    cleartext = bob.verify_from(the_data_source, the_message_kit, decrypt=True)
     assert cleartext == b'Welcome to the flippering.'

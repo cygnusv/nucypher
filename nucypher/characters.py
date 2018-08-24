@@ -520,7 +520,6 @@ class Character:
                     message_kit: Union[UmbralMessageKit, bytes],
                     signature: Signature = None,
                     decrypt=False,
-                    delegator_signing_key: UmbralPublicKey = None,
                     ) -> tuple:
         """
         Inverse of encrypt_for.
@@ -531,10 +530,6 @@ class Character:
         :param message_kit: the message to be (perhaps decrypted and) verified.
         :param signature: The signature to check.
         :param decrypt: Whether or not to decrypt the messages.
-        :param delegator_signing_key: A signing key from the original delegator.
-            This is used only when decrypting a MessageKit with an activated Capsule
-            to check that the KFrag used to create each attached CFrag is the
-            authentic KFrag initially created by the delegator.
 
         :return: Whether or not the signature is valid, the decrypted plaintext
             or NO_DECRYPTION_PERFORMED
@@ -550,10 +545,10 @@ class Character:
 
         if decrypt:
             # We are decrypting the message; let's do that first and see what the sig header says.
-            cleartext_with_sig_header = self.decrypt(message_kit, verifying_key=delegator_signing_key)
+            cleartext_with_sig_header = self.decrypt(message_kit)
             sig_header, cleartext = default_constant_splitter(cleartext_with_sig_header, return_remainder=True)
             if sig_header == constants.SIGNATURE_IS_ON_CIPHERTEXT:
-                # THe ciphertext is what is signed - note that for later.
+                # The ciphertext is what is signed - note that for later.
                 message = message_kit.ciphertext
                 if not signature:
                     raise ValueError("Can't check a signature on the ciphertext if don't provide one.")
@@ -590,8 +585,8 @@ class Character:
         If they don't have the correct Power, the appropriate PowerUpError is raised.
         """
 
-    def decrypt(self, message_kit, verifying_key: UmbralPublicKey = None):
-        return self._crypto_power.power_ups(EncryptingPower).decrypt(message_kit, verifying_key)
+    def decrypt(self, message_kit):
+        return self._crypto_power.power_ups(EncryptingPower).decrypt(message_kit)
 
     def sign(self, message):
         return self._crypto_power.power_ups(SigningPower).sign(message)
