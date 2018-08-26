@@ -524,7 +524,7 @@ class Character:
         """
         Inverse of encrypt_for.
 
-        :param actor_that_sender_claims_to_be: A Character instance representing
+        :param mystery_stranger: A Character instance representing
             the actor whom the sender claims to be.  We check the public key
             owned by this Character instance to verify.
         :param message_kit: the message to be (perhaps decrypted and) verified.
