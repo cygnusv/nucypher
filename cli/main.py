@@ -1081,7 +1081,7 @@ def status(config,
     #
 
     # Gather Data
-    known_nodes = config.node_configuration.read_known_nodes()
+    known_nodes = config.node_configuration.known_nodes
     known_certificate_files = os.listdir(config.node_configuration.known_certificates_dir)
     number_of_known_nodes = len(known_nodes)
     seen_nodes = len(known_certificate_files)
