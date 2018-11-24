@@ -8,37 +8,37 @@ workflows:
           filters:
             tags:
               only: /.*/
-      - eth_contract_unit:
+      - eth_contract:
           filters:
             tags:
               only: /.*/
           requires:
             - bundle_dependencies-36
-      - config_unit:
+      - config:
           filters:
             tags:
               only: /.*/
           requires:
             - bundle_dependencies-36
-      - crypto_unit:
+      - crypto:
           filters:
             tags:
               only: /.*/
           requires:
             - bundle_dependencies-36
-      - network_unit:
+      - network:
           filters:
             tags:
               only: /.*/
           requires:
             - bundle_dependencies-36
-      - keystore_unit:
+      - keystore:
           filters:
             tags:
               only: /.*/
           requires:
             - bundle_dependencies-36
-      - blockchain_interface_unit:
+      - blockchain_interface:
           filters:
             tags:
               only: /.*/
@@ -55,28 +55,34 @@ workflows:
             tags:
               only: /.*/
           requires:
-            - eth_contract_unit
+            - eth_contract
       - mypy_type_check:
           filters:
             tags:
               only: /.*/
           requires:
-            - config_unit
-            - crypto_unit
-            - network_unit
-            - keystore_unit
+            - config
+            - crypto
+            - network
+            - keystore
             - character
       - cli_tests:
           filters:
             tags:
               only: /.*/
           requires:
-            - blockchain_interface_unit
-            - config_unit
-            - crypto_unit
-            - network_unit
-            - keystore_unit
+            - blockchain_interface
+            - config
+            - crypto
+            - network
+            - keystore
             - character
+      - ursula_command_tests:
+          filters:
+            tags:
+              only: /.*/
+          requires:
+            - cli_tests
       - test_deploy:
           context: "NuCypher PyPI"
           requires:
@@ -129,7 +135,7 @@ jobs:
           paths:
             - nucypher-*
 
-  blockchain_interface_unit:
+  blockchain_interface:
     <<: *python_36_base
     steps:
       - checkout
@@ -141,7 +147,7 @@ jobs:
       - store_test_results:
           path: ./reports/pytest/
 
-  eth_contract_unit:
+  eth_contract:
     <<: *python_36_base
     parallelism: 4
     steps:
@@ -155,7 +161,7 @@ jobs:
       - store_test_results:
           path: ./reports/pytest/
 
-  config_unit:
+  config:
     <<: *python_36_base
     steps:
       - checkout
@@ -167,7 +173,7 @@ jobs:
       - store_test_results:
           path: ./reports/pytest/
 
-  crypto_unit:
+  crypto:
     <<: *python_36_base
     steps:
       - checkout
@@ -179,7 +185,7 @@ jobs:
       - store_test_results:
           path: ./reports/pytest/
 
-  network_unit:
+  network:
     <<: *python_36_base
     steps:
       - checkout
@@ -191,7 +197,7 @@ jobs:
       - store_test_results:
           path: ./reports/pytest/
 
-  keystore_unit:
+  keystore:
     <<: *python_36_base
     steps:
       - checkout
@@ -237,7 +243,20 @@ jobs:
     - run:
         name: Nucypher CLI Tests
         command: |
-          pipenv run pytest -v --runslow tests/cli --junitxml=./reports/pytest/results.xml
+          pipenv run pytest -v --runslow tests/cli/commands --junitxml=./reports/pytest/results.xml
+    - store_test_results:
+        path: ./reports/pytest/
+
+  ursula_command_tests:
+    <<: *python_36_base
+    steps:
+    - checkout
+    - attach_workspace:
+        at: ~/.local/share/virtualenvs/
+    - run:
+        name: Ursula Command Tests
+        command: |
+          pipenv run pytest -v --runslow tests/cli/protocol --junitxml=./reports/pytest/results.xml
     - store_test_results:
         path: ./reports/pytest/
 
