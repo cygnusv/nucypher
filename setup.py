@@ -85,10 +85,10 @@ INSTALL_REQUIRES = [
     'maya',
 
     # Third Party (Ethereum)
-    'eth-utils==1.2.2',
+    'eth-utils==1.2.1',
     'eth-keys',
     'eth-tester>=0.1.0b33',
-    'py-evm>=0.2.0a33',
+    'py-evm==0.2.0a33',
     'py-solc',
     'web3',
 
@@ -103,7 +103,7 @@ INSTALL_REQUIRES = [
 
 TESTS_REQUIRE = [
     'pytest',
-    'pytest-xdist'
+    'pytest-xdist',
     'pytest-mypy',
     'pytest-twisted',
     'pytest-cov',
@@ -127,7 +127,7 @@ BENCHMARKS_REQUIRE = [
     'pytest-benchmark'
 ]
 
-EXTRAS_REQUIRE = {'testing': TESTS_REQUIRE,
+EXTRAS_REQUIRE = {'test': TESTS_REQUIRE,
                   'deployment': DEPLOY_REQUIRES,
                   'docs': DOCS_REQUIRE,
                   'benchmark': BENCHMARKS_REQUIRE}
@@ -141,11 +141,14 @@ setup(name=ABOUT['__title__'],
       license=ABOUT['__license__'],
       long_description=long_description,
 
+      setup_requires=['pytest-runner'],
+      tests_require=TESTS_REQUIRE,
       install_requires=INSTALL_REQUIRES,
       extras_require=EXTRAS_REQUIRE,
 
       packages=find_packages(exclude=["tests"]),
       package_data={PACKAGE_NAME: [
+          'tests/*',
           'network/nicknames/web_colors.json',
           'blockchain/eth/sol/source/contracts/*',
           'blockchain/eth/sol/source/contracts/lib/*',
@@ -158,7 +161,8 @@ setup(name=ABOUT['__title__'],
       # Entry Points
       entry_points={'console_scripts': [
           '{0} = {0}.cli.main:nucypher_cli'.format(PACKAGE_NAME),
-          '{0}-deploy = {0}.cli.deploy:deploy'.format(PACKAGE_NAME)
+          '{0}-deploy = {0}.cli.deploy:deploy'.format(PACKAGE_NAME),
+          '{0}-test = tests.run_tests:run'.format(PACKAGE_NAME)
       ]},
       cmdclass={'verify': VerifyVersionCommand},
 
