@@ -8,6 +8,10 @@ workflows:
           filters:
             tags:
               only: /.*/
+      - mypy:
+          filters:
+            tags:
+              only: /.*/
       - contracts:
           filters:
             tags:
@@ -51,24 +55,25 @@ workflows:
             tags:
               only: /.*/
           requires:
-            - bundle_dependencies-36
-      - character:
-          filters:
-            tags:
-              only: /.*/
-          requires:
-            - bundle_dependencies-36
-      - intercontract_integration:
-          filters:
-            tags:
-              only: /.*/
-          requires:
             - contracts
-      - mypy:
+      - agents:
           filters:
             tags:
               only: /.*/
           requires:
+            - blockchain_interface
+      - actors:
+          filters:
+            tags:
+              only: /.*/
+          requires:
+            - blockchain_interface
+      - deployers:
+          filters:
+            tags:
+              only: /.*/
+          requires:
+            - intercontract_integration
             - blockchain_interface
       - config:
           filters:
@@ -87,36 +92,58 @@ workflows:
             tags:
               only: /.*/
           requires:
-            - ursula_command
-            - intercontract_integration
-            - mypy
-      - test_deploy:
-          context: "NuCypher PyPI"
-          requires:
-            - test_build
+            - actors
+            - deployers
+            - config
+            - character
+      - ursula_command:
           filters:
             tags:
-              only: /v[0-9]+.*/
-            branches:
-              ignore: /.*/
-      - request_publication_approval:
-          type: approval
+              only: /.*/
           requires:
-            - test_deploy
-          filters:
-            tags:
-              only: /v[0-9]+.*/
-            branches:
-              ignore: /.*/
-      - deploy:
-          context: "NuCypher PyPI"
-          requires:
-            - request_publication_approval
-          filters:
-            tags:
-              only: /v[0-9]+.*/
-            branches:
-              ignore: /.*/
+            - actors
+            - deployers
+            - config
+            - character
+
+#
+#  TODO: Initial Publication Automation
+#
+#      - test_build:
+#          filters:
+#            tags:
+#              only: /.*/
+#          requires:
+#            - cli
+#            - ursula_command
+#      - test_deploy:
+#          context: "NuCypher PyPI"
+#          requires:
+#            - test_build
+#          filters:
+#            tags:
+#              only: /v[0-9]+.*/
+#            branches:
+#              ignore: /.*/
+#      - request_publication_approval:
+#          type: approval
+#          requires:
+#            - test_deploy
+#          filters:
+#            tags:
+#              only: /v[0-9]+.*/
+#            branches:
+#              ignore: /.*/
+#      - deploy:
+#          context: "NuCypher PyPI"
+#          requires:
+#            - request_publication_approval
+#          filters:
+#            tags:
+#              only: /v[0-9]+.*/
+#            branches:
+#              ignore: /.*/
+#
 
 python_36_base: &python_36_base
     working_directory: ~/nucypher-depends
@@ -149,7 +176,43 @@ jobs:
           at: ~/.local/share/virtualenvs/
       - run:
           name: Blockchain Interface Tests
-          command: pipenv run pytest --cov=nucypher/blockchain/eth -v --runslow tests/blockchain/eth/interfaces tests/blockchain/eth/entities --junitxml=./reports/pytest/results.xml
+          command: pipenv run pytest --cov=nucypher/blockchain/eth -v --runslow tests/blockchain/eth/interfaces --junitxml=./reports/pytest/results.xml
+      - store_test_results:
+          path: ./reports/pytest/
+
+  agents:
+    <<: *python_36_base
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ~/.local/share/virtualenvs/
+      - run:
+          name: Blockchain Agent Tests
+          command: pipenv run pytest --cov=nucypher/blockchain/eth -v --runslow $(circleci tests glob tests/blockchain/eth/entities/agents/**/*.py | circleci tests split --split-by=timings) --junitxml=./reports/pytest/results.xml
+      - store_test_results:
+          path: ./reports/pytest/
+
+  actors:
+    <<: *python_36_base
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ~/.local/share/virtualenvs/
+      - run:
+          name: Blockchain Actor Tests
+          command: pipenv run pytest --cov=nucypher/blockchain/eth -v --runslow $(circleci tests glob tests/blockchain/eth/entities/actors/**/*.py | circleci tests split --split-by=timings) --junitxml=./reports/pytest/results.xml
+      - store_test_results:
+          path: ./reports/pytest/
+
+  deployers:
+    <<: *python_36_base
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ~/.local/share/virtualenvs/
+      - run:
+          name: Contract Deployer Tests
+          command: pipenv run pytest --cov=nucypher/blockchain/eth -v --runslow tests/blockchain/eth/entities/deployers --junitxml=./reports/pytest/results.xml
       - store_test_results:
           path: ./reports/pytest/
 
@@ -310,26 +373,19 @@ jobs:
             pipenv install --three --dev --skip-lock --pre
             pipenv install --dev --skip-lock twine
       - run:
-          name: Verify git tag == __version__ (Test Deploy)
-          command: pipenv run python setup.py verify
-      - run:
           name: Build Python Wheel
           command: |
             pipenv run python setup.py sdist
             pipenv run python setup.py bdist_wheel -v
       - run:
-          name: Destroy Build Enviorment
-          command: |
-            pipenv --rm --v
-      - run:
-          name: Install Nucypher via Wheel with Test Extra
+          name: Install Nucypher via Wheel
           command: |
             pip3 install --user ./dist/nucypher-0.1.0a0-py3-none-any.whl[test]
-            python -c "import nucypher; print(nucypher.__version__)"
       - run:
-          name: Run Integrated Test Suite
+          name: Run Entrypoint Version Commands
           command: |
-            nucypher-test
+            python -c "import nucypher; print(nucypher.__version__)"
+            nucypher --version
 
   test_deploy:
     <<: *python_36_base
