@@ -88,7 +88,7 @@ INSTALL_REQUIRES = [
     'eth-utils==1.2.2',
     'eth-keys',
     'eth-tester>=0.1.0b33',
-    'py-evm>=0.2.0a33',
+    'py-evm==0.2.0a33',
     'py-solc',
     'web3',
 
