@@ -522,7 +522,9 @@ class Bob(Character):
                 "Bob doesn't have a TreasureMap to match any of these capsules: {}".format(
                     capsules))
 
-        for node_id, arrangement_id in treasure_map_to_use:
+        random_walk = list(treasure_map_to_use)
+        random.shuffle(random_walk)
+        for node_id, arrangement_id in random_walk:
             ursula = self.known_nodes[node_id]
 
             capsules_to_include = []
