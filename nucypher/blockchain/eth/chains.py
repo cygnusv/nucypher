@@ -104,7 +104,18 @@ class Blockchain:
         return self.__interface.get_contract_by_name(name)
 
     def wait_for_receipt(self, txhash: str, timeout: int = None) -> dict:
-        """Wait for a transaction receipt and return it"""
+        """Waits for a transaction receipt and returns it"""
         timeout = timeout if timeout is not None else self.interface.timeout
         result = self.__interface.w3.eth.waitForTransactionReceipt(txhash, timeout=timeout)
         return result
+
+    def transact(self, contract_function, args, tx_args=None, tx_from=None):
+        """Invoke a contract function through a transaction, waits for the receipt
+        and returns both the transaction and its receipt"""
+        if not tx_args:
+            tx_args = dict()
+        if tx_from:
+            tx_args['from'] = tx_from
+        tx = contract_function(*args).transact(tx_args)
+        receipt = self.wait_for_receipt(tx)
+        return tx, receipt

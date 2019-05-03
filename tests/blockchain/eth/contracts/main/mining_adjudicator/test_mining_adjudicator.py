@@ -113,9 +113,10 @@ def test_evaluate_cfrag(testerchain, escrow, adjudicator_contract, slashing_econ
         reward_ = penalty_ // slashing_economics.reward_coefficient
         return penalty_, reward_
 
+    transact = testerchain.transact
+
     # Prepare one miner
-    tx = escrow.functions.setMinerInfo(miner, worker_stake).transact()
-    testerchain.wait_for_receipt(tx)
+    transact(escrow.functions.setMinerInfo, (miner, worker_stake))
 
     # Generate miner's Umbral key
     miner_umbral_private_key = UmbralPrivateKey.gen_key()
@@ -179,8 +180,7 @@ def test_evaluate_cfrag(testerchain, escrow, adjudicator_contract, slashing_econ
     ###############################
     # TODO: be more specific on the expected exception
     with pytest.raises((TransactionFailed, ValueError)):
-        tx = adjudicator_contract.functions.evaluateCFrag(*args).transact()
-        testerchain.wait_for_receipt(tx)
+        transact(adjudicator_contract.functions.evaluateCFrag, *args)
 
     ###############################
     # Test: Ursula produces incorrect proof:

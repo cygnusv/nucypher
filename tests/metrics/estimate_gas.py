@@ -223,6 +223,8 @@ def estimate_gas(analyzer: AnalyzeGas = None) -> None:
     analyzer.start_collection()
     print("********* Estimating Gas *********")
 
+    transact = testerchain.transact
+
     #
     # Pre deposit tokens
     #
@@ -238,12 +240,11 @@ def estimate_gas(analyzer: AnalyzeGas = None) -> None:
     #
     log.info("Transfer tokens = " + str(
         token_functions.transfer(ursula1, MIN_ALLOWED_LOCKED * 10).estimateGas({'from': origin})))
-    tx = token_functions.transfer(ursula1, MIN_ALLOWED_LOCKED * 10).transact({'from': origin})
-    testerchain.wait_for_receipt(tx)
-    tx = token_functions.transfer(ursula2, MIN_ALLOWED_LOCKED * 10).transact({'from': origin})
-    testerchain.wait_for_receipt(tx)
-    tx = token_functions.transfer(ursula3, MIN_ALLOWED_LOCKED * 10).transact({'from': origin})
-    testerchain.wait_for_receipt(tx)
+
+    transact(token_functions.transfer, (ursula1, MIN_ALLOWED_LOCKED * 10), tx_from=origin)
+    transact(token_functions.transfer, (ursula2, MIN_ALLOWED_LOCKED * 10), tx_from=origin)
+    transact(token_functions.transfer, (ursula3, MIN_ALLOWED_LOCKED * 10), tx_from=origin)
+
 
     #
     # Ursula and Alice give Escrow rights to transfer
@@ -675,7 +676,6 @@ def estimate_gas(analyzer: AnalyzeGas = None) -> None:
     )
     tx = miner_functions.setMiningAdjudicator(adjudicator.address).transact()
     testerchain.wait_for_receipt(tx)
-    adjudicator_functions = adjudicator.functions
 
     #
     # Slashing
