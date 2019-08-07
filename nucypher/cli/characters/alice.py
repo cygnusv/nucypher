@@ -127,11 +127,14 @@ def alice(click_config,
             config_root = click_config.config_file  # Envvar
 
         if not pay_with and not federated_only:
+            # Connect to Blockchain
+            fetch_registry = registry_filepath is None and not click_config.no_registry
             registry = None
             if registry_filepath:
                 registry = EthereumContractRegistry(registry_filepath=registry_filepath)
             blockchain = BlockchainInterface(provider_uri=provider_uri, registry=registry, poa=poa)
-            blockchain.connect(sync_now=sync, fetch_registry=False)
+            blockchain.connect(sync_now=sync, fetch_registry=fetch_registry)
+
             pay_with = select_client_account(emitter=emitter, blockchain=blockchain)
 
         new_alice_config = AliceConfiguration.generate(password=get_nucypher_password(confirm=True),
