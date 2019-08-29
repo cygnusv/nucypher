@@ -144,6 +144,10 @@ class Alice(Character, BlockchainPolicyAuthor):
         self.active_policies = dict()
         self.revocation_kits = dict()
 
+    def get_card(self):
+        from nucypher.characters.utils import AliceCard
+        return AliceCard(alice_verifying_key=self.public_keys(SigningPower))
+
     def add_active_policy(self, active_policy):
         """
         Adds a Policy object that is active on the NuCypher network to Alice's
@@ -463,7 +467,6 @@ class Bob(Character):
         from nucypher.characters.utils import BobCard
         return BobCard(bob_encrypting_key=self.public_keys(DecryptingPower),
                        bob_verifying_key=self.public_keys(SigningPower))
-
 
     def _pick_treasure_map(self, treasure_map=None, map_id=None):
         if not treasure_map:

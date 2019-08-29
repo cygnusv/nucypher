@@ -69,6 +69,17 @@ class Card:
         return dict(self) == dict(other)
 
 
+class AliceCard(Card):
+
+    _specification = dict(alice_verifying_key=(bytes, 33))
+
+    def __init__(self, alice_verifying_key):
+        self.alice_verifying_key = bytes(alice_verifying_key)
+
+    def __bytes__(self):
+        return bytes(self.alice_verifying_key)
+
+
 class BobCard(Card):
 
     _specification = dict(bob_verifying_key=(bytes, 33), bob_encrypting_key=(bytes, 33))
@@ -83,7 +94,7 @@ class BobCard(Card):
 
 class PolicyCard(Card):
 
-    _splitter = dict(alice_verifying_key=(bytes, 33), policy_encrypting_key=(bytes, 33))
+    _specification = dict(alice_verifying_key=(bytes, 33), policy_encrypting_key=(bytes, 33))
 
     def __init__(self, alice_verifying_key, policy_encrypting_key):
         self.alice_verifying_key = bytes(alice_verifying_key)
