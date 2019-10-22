@@ -5,11 +5,7 @@ from nucypher.characters.banners import ENRICO_BANNER
 from nucypher.characters.lawful import Enrico
 from nucypher.cli.config import nucypher_click_config
 from nucypher.cli.types import NETWORK_PORT
-
-
-policy_encrypting_key_option =  \
-    click.option('--policy-encrypting-key', help="Encrypting Public Key for Policy as hexadecimal string",
-                 type=click.STRING, required=True)
+from nucypher.cli.common_options import *
 
 
 @click.group()
@@ -21,8 +17,8 @@ def enrico():
 
 
 @enrico.command()
-@policy_encrypting_key_option
-@click.option('--dry-run', '-x', help="Execute normally without actually starting the node", is_flag=True)
+@option_policy_encrypting_key(required=True)
+@option_dry_run
 @click.option('--http-port', help="The host port to run Enrico HTTP services on", type=NETWORK_PORT)
 @nucypher_click_config
 def run(click_config, policy_encrypting_key, dry_run, http_port):
@@ -49,7 +45,7 @@ def run(click_config, policy_encrypting_key, dry_run, http_port):
 
 
 @enrico.command()
-@policy_encrypting_key_option
+@option_policy_encrypting_key(required=True)
 @click.option('--message', help="A unicode message to encrypt for a policy", type=click.STRING, required=True)
 @nucypher_click_config
 def encrypt(click_config, policy_encrypting_key, message):
