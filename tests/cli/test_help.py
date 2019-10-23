@@ -20,12 +20,8 @@ import click
 import pytest
 
 import nucypher
-from nucypher.cli.config import NucypherClickConfig
 from nucypher.cli.deploy import deploy
 from nucypher.cli.main import nucypher_cli, ENTRY_POINTS
-
-NUCYPHER_CLICK_CONFIG_OPTIONS = set(inspect.signature(NucypherClickConfig.set_options).parameters.keys())
-NUCYPHER_CLICK_CONFIG_OPTIONS.remove('self')
 
 
 def test_echo_nucypher_version(click_runner):
@@ -72,16 +68,6 @@ def test_nucypher_deploy_help_message(click_runner):
     result = click_runner.invoke(deploy, help_args, catch_exceptions=False)
     assert result.exit_code == 0
     assert 'deploy [OPTIONS] COMMAND [ARGS]' in result.output, 'Missing or invalid help text was produced.'
-
-
-@pytest.mark.parametrize('entry_point_name, entry_point', ([command.name, command] for command in ENTRY_POINTS))
-def test_character_command_options_and_parameters_match(entry_point_name, entry_point):
-    if isinstance(entry_point, click.Group):
-        for sub_command in entry_point.commands.values():
-            _check_command_options_and_parameters(sub_command)
-    else:
-        # Plain old command - currently just `moe`
-        _check_command_options_and_parameters(entry_point)
 
 
 def _check_command_options_and_parameters(command):
