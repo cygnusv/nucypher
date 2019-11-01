@@ -105,7 +105,7 @@ def run(general_config,
     #############
 
     BOB = actions.make_cli_character(character_config=bob_config,
-                                     general_config=general_config,
+                                     emitter=emitter,
                                      unlock_keyring=not api.dev,
                                      teacher_uri=api.teacher_uri,
                                      min_stake=api.min_stake)
@@ -216,7 +216,7 @@ def public_keys(general_config,
     #############
 
     BOB = actions.make_cli_character(character_config=bob_config,
-                                     general_config=general_config,
+                                     emitter=emitter,
                                      unlock_keyring=not api.dev,
                                      teacher_uri=api.teacher_uri,
                                      min_stake=api.min_stake,
@@ -257,7 +257,7 @@ def retrieve(general_config,
     #############
 
     BOB = actions.make_cli_character(character_config=bob_config,
-                                     general_config=general_config,
+                                     emitter=emitter,
                                      unlock_keyring=not api.dev,
                                      teacher_uri=api.teacher_uri,
                                      min_stake=api.min_stake)
