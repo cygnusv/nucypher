@@ -205,7 +205,7 @@ def public_keys(general_config,
     """
 
     ### Setup ###
-    _setup_emitter(general_config)
+    emitter = _setup_emitter(general_config)
 
     admin = api.admin
 
@@ -246,7 +246,7 @@ def retrieve(general_config,
     """
 
     ### Setup ###
-    _setup_emitter(general_config)
+    emitter = _setup_emitter(general_config)
 
     admin = api.admin
 
