@@ -60,11 +60,11 @@ class AliceConfigOptions:
                 domains={TEMPORARY_DOMAIN},
                 provider_process=self.eth_node,
                 provider_uri=self.provider_uri,
-                federated_only=True)
+                federated_only=True) # FIXME: add error if --federated-only is not True?
 
         else:
             try:
-                alice_config = AliceConfiguration.from_configuration_file(
+                return AliceConfiguration.from_configuration_file(
                     dev_mode=False,
                     network_middleware=middleware,
                     domains=self.domains,
@@ -78,7 +78,6 @@ class AliceConfigOptions:
                 return actions.handle_missing_configuration_file(
                     character_config_class=AliceConfiguration,
                     config_file=config_file)
-            return alice_config
 
     def generate_config(self, emitter, config_root, poa, light, m, n, duration_periods, rate):
 
@@ -98,7 +97,7 @@ class AliceConfigOptions:
 
         return AliceConfiguration.generate(
             password=get_nucypher_password(confirm=True),
-            config_root=config_root,
+            config_root=config_root, # FIXME: or DEFAULT_CONFIG_ROOT?
             checksum_address=pay_with,
             domains=self.domains,
             federated_only=self.federated_only,
