@@ -59,9 +59,10 @@ class StakeHolderConfigOptions:
         self.light = light
         self.registry_filepath = registry_filepath
 
-    def create_config(self, config_file):
+    def create_config(self, emitter, config_file):
         try:
             return StakeHolderConfiguration.from_configuration_file(
+                emitter=emitter,
                 filepath=config_file,
                 provider_uri=self.provider_uri,
                 poa=self.poa,
@@ -107,8 +108,8 @@ class StakeHolderCharacterOptions:
         self.config_options = config_options
         self.staking_address = staking_address
 
-    def create_character(self, config_file, individual_allocation=None, initial_address=None):
-        stakeholder_config = self.config_options.create_config(config_file)
+    def create_character(self, emitter, config_file, individual_allocation=None, initial_address=None):
+        stakeholder_config = self.config_options.create_config(emitter, config_file)
 
         if initial_address is None:
             initial_address = self.staking_address
@@ -138,7 +139,7 @@ class PreallocationStakeHolderCharacterOptions:
         self.beneficiary_address = beneficiary_address
         self.allocation_filepath = allocation_filepath
 
-    def create_character(self, config_file):
+    def create_character(self, emitter, config_file):
 
         opts = self.character_options
 
@@ -169,6 +170,7 @@ class PreallocationStakeHolderCharacterOptions:
             initial_address = None
 
         return opts.create_character(
+            emitter,
             config_file,
             individual_allocation=individual_allocation,
             initial_address=initial_address)
@@ -225,7 +227,7 @@ def list(general_config, character_options, config_file, all):
     List active stakes for current stakeholder.
     """
     emitter = _setup_emitter(general_config)
-    STAKEHOLDER = character_options.create_character(config_file)
+    STAKEHOLDER = character_options.create_character(emitter, config_file)
     painting.paint_stakes(emitter=emitter, stakes=STAKEHOLDER.all_stakes, paint_inactive=all)
 
 
@@ -238,7 +240,7 @@ def accounts(general_config, character_options, config_file):
     Show ETH and NU balances for stakeholder's accounts.
     """
     emitter = _setup_emitter(general_config)
-    STAKEHOLDER = character_options.create_character(config_file)
+    STAKEHOLDER = character_options.create_character(emitter, config_file)
     painting.paint_accounts(emitter=emitter, balances=STAKEHOLDER.wallet.balances)
 
 
@@ -253,8 +255,10 @@ def set_worker(general_config, prealloc_character_options, config_file, force, w
     Bond a worker to a staker.
     """
     emitter = _setup_emitter(general_config)
-    STAKEHOLDER = prealloc_character_options.create_character(config_file)
+
+    STAKEHOLDER = prealloc_character_options.create_character(emitter, config_file)
     blockchain = prealloc_character_options.get_blockchain()
+
     economics = STAKEHOLDER.economics
 
     client_account, staking_address = handle_client_account_for_staking(
@@ -311,8 +315,10 @@ def detach_worker(general_config, prealloc_character_options, config_file, force
     Detach worker currently bonded to a staker.
     """
     emitter = _setup_emitter(general_config)
-    STAKEHOLDER = prealloc_character_options.create_character(config_file)
+
+    STAKEHOLDER = prealloc_character_options.create_character(emitter, config_file)
     blockchain = prealloc_character_options.get_blockchain()
+
     economics = STAKEHOLDER.economics
 
     client_account, staking_address = handle_client_account_for_staking(
@@ -355,8 +361,10 @@ def create(general_config, prealloc_character_options, config_file, force, value
     Initialize a new stake.
     """
     emitter = _setup_emitter(general_config)
-    STAKEHOLDER = prealloc_character_options.create_character(config_file)
+
+    STAKEHOLDER = prealloc_character_options.create_character(emitter, config_file)
     blockchain = prealloc_character_options.get_blockchain()
+
     economics = STAKEHOLDER.economics
 
     client_account, staking_address = handle_client_account_for_staking(
@@ -443,7 +451,8 @@ def restake(general_config, prealloc_character_options, config_file, enable, loc
     Manage re-staking with --enable or --disable.
     """
     emitter = _setup_emitter(general_config)
-    STAKEHOLDER = prealloc_character_options.create_character(config_file)
+
+    STAKEHOLDER = prealloc_character_options.create_character(emitter, config_file)
     blockchain = prealloc_character_options.get_blockchain()
 
     client_account, staking_address = handle_client_account_for_staking(
@@ -493,8 +502,9 @@ def divide(general_config, prealloc_character_options, config_file, force, value
     """
     emitter = _setup_emitter(general_config)
 
-    STAKEHOLDER = prealloc_character_options.create_character(config_file)
+    STAKEHOLDER = prealloc_character_options.create_character(emitter, config_file)
     blockchain = prealloc_character_options.get_blockchain()
+
     economics = STAKEHOLDER.economics
 
     client_account, staking_address = handle_client_account_for_staking(
@@ -588,7 +598,7 @@ def collect_reward(general_config, prealloc_character_options, config_file,
     ### Setup ###
     emitter = _setup_emitter(general_config)
 
-    STAKEHOLDER = prealloc_character_options.create_character(config_file)
+    STAKEHOLDER = prealloc_character_options.create_character(emitter, config_file)
     blockchain = prealloc_character_options.get_blockchain()
 
     if not staking_reward and not policy_reward:
@@ -636,7 +646,7 @@ def preallocation(general_config, prealloc_character_options, config_file, actio
     ### Setup ###
     emitter = _setup_emitter(general_config)
 
-    STAKEHOLDER = prealloc_character_options.create_character(config_file)
+    STAKEHOLDER = prealloc_character_options.create_character(emitter, config_file)
     blockchain = prealloc_character_options.get_blockchain()
 
     # Unauthenticated actions: status
