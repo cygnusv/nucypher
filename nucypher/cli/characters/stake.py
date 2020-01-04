@@ -632,7 +632,7 @@ def collect_reward(general_config, prealloc_character_options, config_file,
                               emitter=emitter)
 
 
-@stake.command('preallocation')
+@stake.command()
 @click.argument('action', type=click.Choice(['status', 'withdraw']))
 @group_prealloc_character_options
 @option_config_file
