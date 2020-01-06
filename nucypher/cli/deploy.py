@@ -142,7 +142,7 @@ class ActorOptions:
 
         password = None
         if not self.hw_wallet and not deployer_interface.client.is_local:
-            password = get_client_password(checksum_address=self.deployer_address)
+            password = get_client_password(checksum_address=deployer_address)
         # Produce Actor
         ADMINISTRATOR = ContractAdministrator(registry=local_registry,
                                               client_password=password,
@@ -406,16 +406,16 @@ def allocations(general_config, actor_options, allocation_infile, allocation_out
     Deploy pre-allocation contracts.
     """
     emitter = general_config.emitter
-    ADMINISTRATOR, _, _, _ = actor_options.create_actor(emitter)
+    ADMINISTRATOR, _, deployer_interface, local_registry = actor_options.create_actor(emitter)
 
     if not sidekick_account and click.confirm('Do you want to use a sidekick account to assist during deployment?'):
         prompt = "Select sidekick account"
         sidekick_account = select_client_account(emitter=emitter,
                                                  prompt=prompt,
-                                                 provider_uri=provider_uri,
+                                                 provider_uri=actor_options.provider_uri,
                                                  registry=local_registry,
                                                  show_balances=True)
-        if not force:
+        if not actor_options.force:
             click.confirm(f"Selected {sidekick_account} - Continue?", abort=True)
 
     if sidekick_account:
