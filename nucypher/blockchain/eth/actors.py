@@ -44,7 +44,7 @@ from nucypher.blockchain.eth.agents import (
     ContractAgency,
     PreallocationEscrowAgent,
 )
-from nucypher.blockchain.eth.clients import ClefSigner
+from nucypher.blockchain.eth.signers import ClefSigner
 from nucypher.blockchain.eth.decorators import validate_checksum_address
 from nucypher.blockchain.eth.deployers import (
     NucypherTokenDeployer,
@@ -1289,7 +1289,7 @@ class StakeHolder(Staker):
                 keyfile = self.__local_accounts.get(checksum_address)
                 transacting_power = TransactingPower(password=password,
                                                      account=checksum_address,
-                                                     client=self.__signer,
+                                                     signer=self.__signer,
                                                      keyfile=keyfile)
                 self.__transacting_powers[checksum_address] = transacting_power
             transacting_power.activate(password=password)
