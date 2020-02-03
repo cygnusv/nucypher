@@ -23,8 +23,8 @@ import maya
 import pytest
 
 from umbral.kfrags import KFrag
+from unittest.mock import patch
 
-from nucypher.blockchain.eth.token import NU
 from nucypher.characters.lawful import Bob, Enrico
 from nucypher.config.characters import AliceConfiguration
 from nucypher.crypto.api import keccak_digest
@@ -32,11 +32,10 @@ from nucypher.crypto.powers import SigningPower, DecryptingPower
 from nucypher.policy.collections import Revocation
 from nucypher.utilities.sandbox.constants import INSECURE_DEVELOPMENT_PASSWORD
 from nucypher.utilities.sandbox.middleware import MockRestMiddleware
-from nucypher.utilities.sandbox.policy import MockPolicyCreation
 
 
 @pytest.mark.usefixtures('blockchain_ursulas')
-def test_decentralized_grant(blockchain_alice, blockchain_bob, agency):
+def test_decentralized_grant(blockchain_alice, blockchain_bob, agency, testerchain):
 
     # Setup the policy details
     n = 3
@@ -70,6 +69,45 @@ def test_decentralized_grant(blockchain_alice, blockchain_bob, agency):
         retrieved_kfrag = KFrag.from_bytes(retrieved_policy.kfrag)
 
         assert kfrag == retrieved_kfrag
+
+    _token, _staking, policy_agent = agency
+    policy_from_blockchain = policy_agent.fetch_policy(policy_id=bytes(policy.hrac())[:16])
+    assert policy_from_blockchain[0] == blockchain_alice.checksum_address  # Alice payed for the policy
+    assert policy_from_blockchain[2] > 0  # The daily rate for the policy paid by Alice
+
+    #
+    # "Alice hace un sinpa" (https://en.wiktionary.org/wiki/sinpa), or Alice does a dine-and-dash.
+    #
+
+    before_balance = testerchain.client.get_balance(blockchain_alice.checksum_address)
+    label = b"I'm not paying for that"
+
+    # Instead of creating the policy on-chain and paying for it, Alice decides to do nothing.
+    with patch("nucypher.policy.policies.BlockchainPolicy.publish",
+               new=lambda *args, **kwargs: "I said I'm not paying for that"):
+        free_policy = blockchain_alice.grant(bob=blockchain_bob,
+                                             label=label,
+                                             m=2,
+                                             n=n,
+                                             rate=int(1e18),  # one ether
+                                             expiration=policy_end_datetime)
+
+    # Let's look at the enacted arrangements.
+    for kfrag in free_policy.kfrags:
+        arrangement = free_policy._enacted_arrangements[kfrag]
+
+        # Get the Arrangement from Ursula's datastore, looking up by the Arrangement ID.
+        retrieved_policy = arrangement.ursula.datastore.get_policy_arrangement(arrangement.id.hex().encode())
+        retrieved_kfrag = KFrag.from_bytes(retrieved_policy.kfrag)
+
+        assert kfrag == retrieved_kfrag
+
+    # ... and yet, the policy was not paid :(
+    policy_from_blockchain = policy_agent.fetch_policy(policy_id=bytes(free_policy.hrac())[:16])
+    assert policy_from_blockchain[0] == blockchain_alice.checksum_address  # Alice payed for the policy
+    assert policy_from_blockchain[2] > 0  # The daily rate for the policy paid by Alice
+    after_balance = testerchain.client.get_balance(blockchain_alice.checksum_address)
+    assert before_balance > after_balance
 
 
 @pytest.mark.usefixtures('federated_ursulas')
