@@ -337,7 +337,7 @@ contract StakingEscrow is Issuer, IERC900History {
     * @param _staker Staker
     * @param _periods Amount of periods that will be subtracted from the current period
     */
-    function getLockedTokensInPast(address _staker, uint16 _periods)
+    function getLockedTokensInPast(address _staker, uint16 _periods)  // TODO: Function seems unused. Can be moved to secondary contract?
         external view returns (uint256 lockedValue)
     {
         StakerInfo storage info = stakerInfo[_staker];
@@ -424,6 +424,7 @@ contract StakingEscrow is Issuer, IERC900History {
     /**
     * @notice Get staker using worker's address
     */
+    // TODO: rename workerToStaker as stakerFromWorker, and remove this function, since the mapping is already public
     function getStakerFromWorker(address _worker) public view returns (address) {
         return workerToStaker[_worker];
     }
