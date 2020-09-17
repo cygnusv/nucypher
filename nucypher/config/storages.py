@@ -57,8 +57,8 @@ class NodeStorage(ABC):
     def __init__(self,
                  federated_only: bool,  # TODO# 466
                  character_class=None,
-                 serializer: Callable = NODE_SERIALIZER,
-                 deserializer: Callable = NODE_DESERIALIZER,
+                 serializer: Callable = None,
+                 deserializer: Callable = None,
                  registry: BaseContractRegistry = None,
                  ) -> None:
 
@@ -66,8 +66,8 @@ class NodeStorage(ABC):
 
         self.log = Logger(self.__class__.__name__)
         self.registry = registry
-        self.serializer = serializer
-        self.deserializer = deserializer
+        self.serializer = serializer or self.NODE_SERIALIZER
+        self.deserializer = deserializer or self.NODE_DESERIALIZER
         self.federated_only = federated_only
         self.character_class = character_class or Ursula
 
@@ -295,6 +295,11 @@ class ForgetfulNodeStorage(NodeStorage):
 class LocalFileBasedNodeStorage(NodeStorage):
     _name = 'local'
     __METADATA_FILENAME_TEMPLATE = '{}.node'
+
+    __identity_method = lambda self, x: x
+
+    NODE_SERIALIZER = __identity_method
+    NODE_DESERIALIZER = __identity_method
 
     class NoNodeMetadataFileFound(FileNotFoundError, NodeStorage.UnknownNode):
         pass
