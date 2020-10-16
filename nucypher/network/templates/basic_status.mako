@@ -121,7 +121,7 @@ ${fleet_state_icon(state.checksum, state.nickname, len(state))}
         border-bottom: 1px solid #ddd;
     }
 
-    .this-node-info {
+    .this-node-info, .known-nodes-info {
         margin-bottom: 1em;
     }
 
@@ -185,6 +185,13 @@ ${fleet_state_icon(state.checksum, state.nickname, len(state))}
     </table>
 
     <h3>Known nodes</h3>
+
+    <table class="known-nodes-info">
+        <tr>
+            <td><i>Total number:</i></td>
+            <td><span class="number_of_nodes">${ len(known_nodes) }</span></td>
+        </tr>
+    </table>
 
     <table class="known-nodes">
         <thead>
