@@ -160,6 +160,18 @@ def _make_rest_app(this_node, log: Logger) -> Flask:
             f"Threshold decryption request for ritual ID #{decryption_request.ritual_id}"
         )
 
+        # enforces that the node is part of the cohort
+        # TODO: #3052 consider using the DKGStorage cache instead of the coordinator agent
+        ritual = this_node.coordinator_agent.get_ritual(
+            decryption_request.id, with_participants=True
+        )
+        participants = [p.provider for p in ritual.participants]
+        if this_node.checksum_address not in participants:
+            return Response(
+                f"Node not part of ritual {decryption_request.ritual_id}",
+                status=HTTPStatus.FORBIDDEN,
+            )
+
         # Deserialize and instantiate ConditionLingo from the request data
         conditions_data = str(decryption_request.conditions)  # nucypher_core.Conditions -> str
         lingo = ConditionLingo.from_list(json.loads(conditions_data))  # str -> list -> ConditionLingo
@@ -177,20 +189,6 @@ def _make_rest_app(this_node, log: Logger) -> Flask:
         )
         if error:
             return Response(error.message, status=error.status_code)
-
-        # TODO: #3052 consider using the DKGStorage cache instead of the coordinator agent
-        # dkg_public_key = this_node.dkg_storage.get_public_key(decryption_request.ritual_id)
-        ritual = this_node.coordinator_agent.get_ritual(
-            decryption_request.ritual_id, with_participants=True
-        )
-        participants = [p.provider for p in ritual.participants]
-
-        # enforces that the node is part of the ritual
-        if this_node.checksum_address not in participants:
-            return Response(
-                f"Node not part of ritual {decryption_request.ritual_id}",
-                status=HTTPStatus.FORBIDDEN,
-            )
 
         # derive the decryption share
         ciphertext = Ciphertext.from_bytes(decryption_request.ciphertext)
