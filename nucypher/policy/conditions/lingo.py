@@ -235,21 +235,28 @@ class ConditionLingo:
         return result
 
     def __process(self, *args, **kwargs) -> Iterator:
-        # TODO: Prevent this lino from bein evaluated if this node does not have
+        # TODO: Prevent this lingo from being evaluated if this node does not have
         #       a connection to all the required blockchains (optimization)
-        for task in self.conditions:
-            if isinstance(task, ReencryptionCondition):
-                condition = task
-                result, value = condition.verify(*args, **kwargs)
-                yield result
-            elif isinstance(task, Operator):
-                yield task
+
+        # TODO: Create a proper class to handle this
+        call_dict = {}
+        for condition in self.conditions:
+            # TODO: Change to try/except
+            if isinstance(condition, ReencryptionCondition):
+                call_dict[condition] = condition._prepare_for_multicall(*args, **kwargs)
             else:
                 raise InvalidConditionLingo(
-                    f"Unrecognized type {type(task)} for ConditionLingo"
+                    f"Unrecognized type {type(condition)} for ConditionLingo"
                 )
 
+        # Processing calL_dict to use multicall
+        call_list = list(call_dict.values())
+        # TODO: create multicall object with list of calls and execute
+
+
+
     def eval(self, *args, **kwargs) -> bool:
+        # TODO: Use infix condition notation - 3058
         data = self.__process(*args, **kwargs)
         # [True, <Operator>, False] -> 'True or False'
         eval_string = ' '.join(str(e) for e in data)
