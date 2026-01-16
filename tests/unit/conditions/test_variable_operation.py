@@ -470,7 +470,7 @@ def test_pow_operator_for_token_decimals():
         ),  # 100 * (10 ** 6) = 100000000
     ]
     result = VariableOperation.evaluate_operations(operations, initial)
-    assert result == 100000000
+    assert result == 100_000_000
 
     # For ETH/most tokens (18 decimals): 1 * (10 ** 18)
     initial = 1  # 1 token
@@ -478,7 +478,7 @@ def test_pow_operator_for_token_decimals():
         VariableOperation(operation="*pow=", value=[10, 18]),  # 1 * (10 ** 18)
     ]
     result = VariableOperation.evaluate_operations(operations, initial)
-    assert result == 1000000000000000000
+    assert result == 1_000_000_000_000_000_000
 
     # Another example: 250.5 tokens with 6 decimals
     initial = 250.5
@@ -489,6 +489,16 @@ def test_pow_operator_for_token_decimals():
     ]
     result = VariableOperation.evaluate_operations(operations, initial)
     assert result == 250500000
+
+    # Another example: 0.123456789012345678 tokens, with exactly 18 decimals
+    initial = 0.123456789012345678
+    operations = [
+        VariableOperation(
+            operation="*pow=", value=[10, 18]
+        ),  # 0.123456789012345678 * (10 ** 18) = 123456789012345678
+    ]
+    result = VariableOperation.evaluate_operations(operations, initial)
+    assert result == 123456789012345678
 
 
 def test_pow_operator_edge_cases():
